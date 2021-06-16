@@ -101,5 +101,6 @@ try:
         fpsClock.tick(FPS)
 except:
     pg.quit()
+    ...
     raise
 pg.quit()
