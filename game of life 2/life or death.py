@@ -1,5 +1,5 @@
 import pygame as pg
-import noise
+
 import random
 from colorsys import hsv_to_rgb
 # Constantes :
@@ -9,8 +9,6 @@ nbs=50
 SIZE = 750/nbs #les dimentions des cellules
 quadri=range(int(WIND/SIZE))
 fps = pg.time.Clock()
-
-
 
 def find(x,y):
     return bool(lieux.get((x,y),0))
@@ -32,13 +30,11 @@ b = True
 mode=''
 try:
     pg.init()
-    f = pg.display.set_mode(size=(WIND, WIND))
-    pg.display.set_caption("Toom's rule")
+    f = pg.display.set_mode((WIND, WIND),pg.RESIZABLE)
+    pg.display.set_caption("The game of life of John Conway by momoladebrouill")
     while b:
         pg.display.flip()
-        s = pg.Surface((WIND, WIND))
-        s.set_alpha(360)
-        s.fill((0, 0, 0))
+        f.fill(0)
         si = pg.key.get_pressed()  # SI la touche est appuyée
         if  not si[pg.K_SPACE]:
             nex={}
@@ -66,6 +62,11 @@ try:
                     SIZE = 750/nbs #les dimentions des cellules
                     quadri=range(int(WIND/SIZE))
                     lieux={}
+            elif event.type==pg.VIDEORESIZE:
+                WIND=min((event.h,event.w))
+                nbs=WIND/SIZE
+                SIZE = WIND/nbs #les dimentions des cellules
+                quadri=range(int(WIND/SIZE))
             elif event.type ==pg.MOUSEBUTTONDOWN:
                 if event.button==1:
                     mode='c'
@@ -73,13 +74,13 @@ try:
                     mode='e'
             elif event.type == pg.MOUSEBUTTONUP:
                 mode=''
-                s.set_alpha(360)
+
                 if event.button==4:
                     SIZE+=1
                 elif event.button==5:
                     SIZE-=1
                 nbs=WIND/SIZE
-                SIZE = 750/nbs #les dimentions des cellules
+                SIZE = WIND/nbs #les dimentions des cellules
                 quadri=range(int(WIND/SIZE))
         x,y=pg.mouse.get_pos()
         x=int(x/SIZE)
@@ -88,7 +89,7 @@ try:
             lieux[(x,y)]=pick()
         elif mode=='e':
             lieux[(x,y)]=0
-        f.blit(s, (0, 0))
+
         for i in quadri:
             for j in quadri:
                 if lieux.get((i,j),0):

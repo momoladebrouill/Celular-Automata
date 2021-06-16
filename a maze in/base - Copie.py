@@ -1,7 +1,5 @@
 import pygame as pg
-import noise
-import random
-from colorsys import hsv_to_rgb
+
 # Constantes :
 FPS = 60  # les fps tabernak
 WIND = 750 # dimentions de la fentere
@@ -34,7 +32,7 @@ b = True
 mode=''
 try:
     pg.init()
-    f = pg.display.set_mode(size=(WIND, WIND))
+    f = pg.display.set_mode((WIND, WIND))
     pg.display.set_caption("Toom's rule")
     while b:
         pg.display.flip()
@@ -42,7 +40,7 @@ try:
         f.set_alpha(360)
         f.fill((0, 0, 0))
         si = pg.key.get_pressed()  # SI la touche est appuyée
-        if  not si[pg.K_SPACE]:
+        if  si[pg.K_SPACE]:
             nex={}
             for a,b in lieux:
                 for i,j in neigbourg(a,b):
@@ -50,7 +48,7 @@ try:
                                 find(i-1,j),                find(i+1,j),
                                 find(i-1,j+1),find(i,j+1),find(i+1,j+1)))
                     if find(i,j):
-                        if som<6:
+                        if som<3:
                             nex[(i,j)]=lieux[(i,j)]
                     else:
                         if som==3:

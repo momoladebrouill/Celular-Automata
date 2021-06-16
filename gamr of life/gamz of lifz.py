@@ -1,6 +1,6 @@
 import pygame as pg
-import noise
-from random import randrange,seed,randint
+
+from random import randrange,randint
 from colorsys import hsv_to_rgb 
 # Constantes :
 FPS = 60  # les fps tabernak

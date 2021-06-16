@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import pygame as pg
-import noise
-import random
+
+
 from colorsys import hsv_to_rgb
 # Constantes :
 FPS = 60  # les fps tabernak
@@ -14,13 +14,10 @@ fps = pg.time.Clock()
 
 
 def find(x,y):
-    """global nex
-    nex[(x,y)]=3"""
     if lieux.get((x,y),0)==1:
         return 1
     else:
         return 0
-    
 
 def neigbourg(i,j):
     ls=((i-1,j-1),(i,j-1),(i+1,j-1),
@@ -40,12 +37,11 @@ mouse=(0,0)
 try:
     pg.init()
     font=pg.font.SysFont("consolas",25)
-    f = pg.display.set_mode(size=(WIND, WIND))
+    f = pg.display.set_mode((WIND, WIND),pg.RESIZABLE)
     pg.display.set_caption("Brian's brain")
     while b:
         b+=1
         pg.display.update()
-        f.set_alpha(100)
         f.fill(0)
         si = pg.key.get_pressed()  # SI la touche est appuyée
         if  not si[pg.K_SPACE] and not b%5:
