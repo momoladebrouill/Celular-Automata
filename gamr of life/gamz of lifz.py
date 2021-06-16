@@ -1,6 +1,6 @@
 import pygame as pg
 
-from random import randrange,randint
+from random import randrange,random
 from colorsys import hsv_to_rgb 
 # Constantes :
 FPS = 60  # les fps tabernak
@@ -9,7 +9,7 @@ SIZE = 50 #les dimentions des cellules
 
 print("W pour tout effacer, cliquer pour créer, S pour simuler et R pour shuffle")
 pg.init()
-f = pg.display.set_mode(size=(WIND, WIND))
+f = pg.display.set_mode((WIND, WIND))
 pg.display.set_caption("Jeu de la vie de Conway")
 fpsClock = pg.time.Clock() #Horloge qui va s'occuper des FPS
 #Groupe qui va être parcouru
@@ -28,7 +28,7 @@ class lutin(pg.sprite.Sprite):  # Les cellules
         self.next_alive=self.alive
         self.x = randrange(WIND)  # X d'origine
         self.y = randrange(WIND)  # Y d'origine
-        self.c = hsv_to_rgb(abs(noise.pnoise2(self.x/WIND*0.1,self.y/WIND*0.1,base=randint(0,10))), 1, 255)  # Couleur principale
+        self.c = hsv_to_rgb(random(), 1, 255)  # Couleur principale
     def draw(self): # Dessine le carré avec sa position sur la grille
         carr(self.x*SIZE, self.y*SIZE, c=self.c,teh=SIZE)
     def check(self): # Appplique les règles de Conway
