@@ -1,0 +1,4 @@
+chacun a une force de 1 à 10
+papier bat o6
+pour attaquer on enlève 1 à la velur de la cellule
+on selectionne une cellule aléatoirement
