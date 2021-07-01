@@ -21,18 +21,20 @@ class Cell:
       return other.mode=='rock'
     
   def attack(self):
-    if self.val<0:
-      pam[self.pos]=0
-    else:
-      todo=random.choice(tour)
-      attack=self.pos[0]+todo[0],self.pos[1]+todo[1]
-      if attack[0]>=0 and attack[1]>=0 and attack[0]<wind[0] and attack[1]<wind[1]:
-        if type(pam[attack])==int:
-          if self.val<9:
-            pam[attack]=Cell(self.mode,attack,self.val+1)
-            
-        elif pam[attack].is_weaker(self):
-          pam[attack].val-=1
+    todo=random.choice(tour)
+    attack=self.pos[0]+todo[0],self.pos[1]+todo[1]
+    if attack[0]>=0 and attack[1]>=0 and attack[0]<wind[0] and attack[1]<wind[1]:
+      if type(pam[attack])==int:
+        if self.val<=9:
+          pam[attack]=Cell(self.mode,attack,self.val+1)
+          draw(pam[attack],attack)
+          
+      elif pam[attack].is_weaker(self):
+        pam[attack].val-=1
+        draw(pam[attack],attack)
+        if pam[attack].val<=0 and self.val<=9:
+          pam[attack]=Cell(self.mode,attack,self.val+1)
+          draw(pam[attack],attack)
           
 def col(val,pos):
   if type(val)==int:
@@ -42,13 +44,14 @@ def col(val,pos):
    
     return 0
   else:
-    c=255-c
+    cg=c
+    
   if val.mode=='rock':
-    return (0,0,c)
+    return (0,0,cg)
   elif val.mode=='sci':
-    return (c,c,c)
+    return (0,cg,0)
   elif val.mode=='paper':
-    return (c,0,0)
+    return (cg,0,0)
 pam={}
 wind=(500//size,500//size)
 for y in range(wind[0]):
@@ -67,21 +70,20 @@ create=False
 remap=False
 conf=[]
 maxx,maxy=50,50
-
+def draw(truc,pos):
+  pg.draw.rect(f,col(truc,pos),((pos[0]*size,pos[1]*size),(size,size)))
 while B:
-  fps.tick()
   pg.display.update()
-
   if create:
     mouse=pg.mouse.get_pos()
-    mouse=(mouse[0]//size),(mouse[1]//size)
-    pam[mouse]=Cell(mode,mouse,0)
+    pam[(mouse[0]//size),(mouse[1]//size)]=Cell(mode,((mouse[0]//size),(mouse[1]//size)),0)
+
     
   for pos in pam:
     truc=pam[pos]
-    if type(truc)!=int :
+    if type(truc)!=int:
       truc.attack()
-      pg.draw.rect(f,col(truc,pos),((pos[0]*size,pos[1]*size),(size,size)))
+      
 
   for event in pg.event.get():
     if event.type==pg.QUIT:
@@ -99,18 +101,24 @@ while B:
     elif event.type==pg.MOUSEBUTTONUP:
       if event.button==5:
         size+=1
-        
         remap=True
+        
       elif event.button==4:
         size-=1
         if not size:size=1
         remap=True
+        
       else:
         create=False
     elif event.type==pg.KEYUP:
       if event.key==pg.K_c:
         breakpoint()
-        #J e a n
+      elif event.key==pg.K_e:
+        f.fill(0)
+        for y in range(wind[1]):
+          for x in range(wind[0]):
+            pam[x,y]=0
+        
     if event.type==pg.VIDEORESIZE:
       wind=event.w//size,event.h//size
       remap=True
@@ -123,10 +131,7 @@ while B:
           pam[(x,y)]=0
           if maxx>nmaxx:
             nmaxx=maxx
-            
           if maxy>nmaxy:
             nmaxy=maxy
-            
     maxx,maxy=nmaxx,nmaxy
-    print(maxx,maxy)
     remap=False
