@@ -4,35 +4,32 @@ import random
 class Tabl():
     def __init__(self):
         self.val=0
-        self.w=10
-        self.h=10
+        self.w=50
+        self.h=50
     def __setitem__(self,pos,val):
+
         if val:
             self.val+=2**(pos[1]*self.w+pos[0])
-        else:
-            if self[pos]:
-                self.val-=2**(pos[1]*self.w+pos[0])
+        elif self[pos]:
+            self.val-=2**(pos[1]*self.w+pos[0])
 
     def __getitem__(self,pos):
-        return self.val&2**(pos[1]*self.w+pos[0])
+        if 0<=pos[0]<=self.w and 0<=pos[1]<=self.h:
+            return 1 if self.val&2**(pos[1]*self.w+pos[0]) else 0
+        return 0
     def __iter__(self):
         self.x,self.y=0,1
         self.part=1
-        self.bi=False
         return self
     def __next__(self):
-        goodtogo=lambda self:(self.part//2)&self.val
-        while goodtogo(self) and self.bi:
-            self.x+=1
-            self.part*=2
-            if self.x >self.w:
-                self.x=1
-                self.y+=1
-            if self.y>self.h:
-                raise StopIteration
-            if goodtogo(self):
-                self.bi= not self.bi
-                return self.x-1,self.y-1
+        self.x+=1
+        self.part*=2
+        if self.x >self.w:
+            self.x=1
+            self.y+=1
+        if self.y>self.h:
+            raise StopIteration
+        return self.x-1,self.y-1,self[self.x-1,self.y-1]
     def __repr__(self):
         traceur=1
         s=""
@@ -42,8 +39,10 @@ class Tabl():
                 traceur*=2
             s+="\n"
         return s
-t=Tabl()
-rules={"alive":5}
+
+
+rules={"born":[3,3],"die":[4,8]}
+tour=[(-1,-1),(-1,0),(-1,1),(0,-1),(0,1),(1,-1),(1,0),(1,1)]
 class Fen(tk.Tk):
     def __init__(self):
         tk.Tk.__init__(self)
@@ -51,10 +50,24 @@ class Fen(tk.Tk):
         self.title("Cellular Automata")
         self.can.pack(expand=tk.YES)
         self.can["bg"]="black"
+        
         self.isrunning=tk.BooleanVar(self,False)
-        self.cases={}
+        
         tk.Checkbutton(self,text="run the simulation",
                        variable=self.isrunning).pack()
+        
+        tk.Button(self,text="clear",command=self.empty).pack()
+        self.s=[tk.Scale(self,from_=1,to=8,orient=tk.HORIZONTAL) for _ in range(4)]
+        for s in self.s:s.pack()
+        
+        self.t=Tabl()
+        self.cases={}
+    def empty(self):
+        self.t=Tabl()
+        for pos in self.cases:
+            Id=self.cases[pos]
+            self.can.delete(Id)
+        self.cases={}
     def eachframe(self):
         if self.isrunning.get():
             """
@@ -68,24 +81,46 @@ class Fen(tk.Tk):
                 #self.can.delete(tag)
                 pos=tuple(tag)
             """
-            for x,y,val in t:
-                ...
+            rules={
+                "born":[self.s[0].get(),self.s[1].get()],
+                "die":[self.s[2].get(),self.s[3].get()]
+                }
+            for x,y,val in self.t:
+                somme=sum(self.t[x+mx,y+my] for mx,my in tour)
+                if val:
+                    if rules["die"][0]<=somme<=rules["die"][1]:
+                        self.deleteat((x,y))
+                else:
+                    if rules["born"][0]<=somme<=rules["born"][1]:
+                        self.addat((x,y))
                 
-                
-            
-                
-                
-    
         self.after(20,self.eachframe)
-    def truc(self,event):
-        pos=event.x//10*10,event.y//10*10
-        t[pos]=1
-        self.cases[pos]=self.can.create_rectangle(pos[0],pos[1],pos[0]+10,pos[1]+10,
+        
+    def deleteat(self,pos):
+        self.t[pos]=0
+        for p in self.cases:
+            if p==pos:
+                Id=self.cases[pos]
+                self.can.delete(Id)
+                del self.cases[pos]
+                break
+    def addat(self,pos):
+        self.t[pos]=1
+        self.cases[pos]=self.can.create_rectangle(pos[0]*10,pos[1]*10,pos[0]*10+10,pos[1]*10+10,
                                   fill="white",tag=f"{pos}")
+            
+    def useradd(self,event):
+        pos=event.x//10,event.y//10
+        self.addat(pos)
+    def userdel(self,event):
+        pos=event.x//10,event.y//10
+        self.deleteat(pos)
+        
         
         
 
-f"""=Fen()
-f.can.bind("<Button>",f.truc)
+f=Fen()
+f.can.bind("<Button-1>",f.useradd)
+f.can.bind("<Button-3>",f.userdel)
 f.eachframe()
-tk.mainloop()"""
+tk.mainloop()
