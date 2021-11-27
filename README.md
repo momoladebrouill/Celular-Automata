@@ -1,3 +1,3 @@
-# cellular-automata
-A  bunch of cellular automatisations, crées par moaaaa 
-Vous pouvez vous déplacer sur la grille dans la plupart des projets, bonne découverte !
+# Cellular Automations 
+Some of the most known celular automatons, you can also create your own game of life on the folder “your own cellular automata”
+

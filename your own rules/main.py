@@ -1,6 +1,9 @@
 import tkinter as tk
 import random
 
+
+tour=[(-1,-1),(-1,0),(-1,1),(0,-1),(0,1),(1,-1),(1,0),(1,1)]
+
 class Tabl():
     def __init__(self):
         self.val=0
@@ -41,33 +44,49 @@ class Tabl():
         return s
 
 
-rules={"born":[3,3],"die":[4,8]}
-tour=[(-1,-1),(-1,0),(-1,1),(0,-1),(0,1),(1,-1),(1,0),(1,1)]
 class Fen(tk.Tk):
     def __init__(self):
         tk.Tk.__init__(self)
-        self.can=tk.Canvas(self,width=500,height=500)
         self.title("Cellular Automata")
-        self.can.pack(expand=tk.YES)
+        
+        self.can=tk.Canvas(self,width=500,height=500)
         self.can["bg"]="black"
+        self.can.grid(row=0,column=0)
+
+        param=tk.Frame(self)
+        param.grid(row=0,column=1)
         
         self.isrunning=tk.BooleanVar(self,False)
         
-        tk.Checkbutton(self,text="run the simulation",
+        tk.Checkbutton(param,text="run the simulation",
                        variable=self.isrunning).pack()
         
-        tk.Button(self,text="clear",command=self.empty).pack()
-        self.s=[tk.Scale(self,from_=1,to=8,orient=tk.HORIZONTAL) for _ in range(4)]
-        for s in self.s:s.pack()
+        tk.Button(param,text="clear",command=self.empty).pack()
+        self.s=[(tk.Scale(param,
+                         from_=1,
+                         to=8,
+                         orient=tk.HORIZONTAL,
+                         command=self.newrules),tex) for tex in ["Min born","Max born","Min death","Max death"]]
+        for s,tex in self.s:
+            tk.Label(param,text=tex).pack()
+            s.pack()
         
         self.t=Tabl()
         self.cases={}
+        self.s=[i[0] for i in self.s]
+        self.newrules()
     def empty(self):
         self.t=Tabl()
         for pos in self.cases:
             Id=self.cases[pos]
             self.can.delete(Id)
         self.cases={}
+    def newrules(self,x=None):
+        
+        self.rules={
+                "born":[self.s[0].get(),self.s[1].get()],
+                "die":[self.s[2].get(),self.s[3].get()]
+                }
     def eachframe(self):
         if self.isrunning.get():
             """
@@ -81,17 +100,14 @@ class Fen(tk.Tk):
                 #self.can.delete(tag)
                 pos=tuple(tag)
             """
-            rules={
-                "born":[self.s[0].get(),self.s[1].get()],
-                "die":[self.s[2].get(),self.s[3].get()]
-                }
+            
             for x,y,val in self.t:
                 somme=sum(self.t[x+mx,y+my] for mx,my in tour)
                 if val:
-                    if rules["die"][0]<=somme<=rules["die"][1]:
+                    if self.rules["die"][0]<=somme<=self.rules["die"][1]:
                         self.deleteat((x,y))
                 else:
-                    if rules["born"][0]<=somme<=rules["born"][1]:
+                    if self.rules["born"][0]<=somme<=self.rules["born"][1]:
                         self.addat((x,y))
                 
         self.after(20,self.eachframe)
