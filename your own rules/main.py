@@ -5,12 +5,12 @@ import random
 tour=[(-1,-1),(-1,0),(-1,1),(0,-1),(0,1),(1,-1),(1,0),(1,1)]
 
 class Tabl():
-    def __init__(self):
+    def __init__(self,width=50,height=50):
         self.val=0
         self.w=50
         self.h=50
+        self.max=2**(self.w*self.h)
     def __setitem__(self,pos,val):
-
         if val:
             self.val+=2**(pos[1]*self.w+pos[0])
         elif self[pos]:
@@ -20,10 +20,12 @@ class Tabl():
         if 0<=pos[0]<=self.w and 0<=pos[1]<=self.h:
             return 1 if self.val&2**(pos[1]*self.w+pos[0]) else 0
         return 0
+    
     def __iter__(self):
         self.x,self.y=0,1
         self.part=1
         return self
+    
     def __next__(self):
         self.x+=1
         self.part*=2
@@ -48,7 +50,9 @@ class Fen(tk.Tk):
     def __init__(self):
         tk.Tk.__init__(self)
         self.title("Cellular Automata")
-        
+        self.t=Tabl()
+        self.cases={}
+        self.gen=0
         self.can=tk.Canvas(self,width=500,height=500)
         self.can["bg"]="black"
         self.can.grid(row=0,column=0)
@@ -70,9 +74,9 @@ class Fen(tk.Tk):
         for s,tex in self.s:
             tk.Label(param,text=tex).pack()
             s.pack()
+        self.rpz=tk.StringVar(self,value="0")
+        tk.Label(param,textvariable=self.rpz).pack()
         
-        self.t=Tabl()
-        self.cases={}
         self.s=[i[0] for i in self.s]
         self.newrules()
     def empty(self):
@@ -81,6 +85,7 @@ class Fen(tk.Tk):
             Id=self.cases[pos]
             self.can.delete(Id)
         self.cases={}
+        self.gen=0
     def newrules(self,x=None):
         
         self.rules={
@@ -100,16 +105,19 @@ class Fen(tk.Tk):
                 #self.can.delete(tag)
                 pos=tuple(tag)
             """
-            
+            todell,toadd=set(),set()            
             for x,y,val in self.t:
                 somme=sum(self.t[x+mx,y+my] for mx,my in tour)
                 if val:
                     if self.rules["die"][0]<=somme<=self.rules["die"][1]:
-                        self.deleteat((x,y))
+                        todell.add((x,y))
                 else:
                     if self.rules["born"][0]<=somme<=self.rules["born"][1]:
-                        self.addat((x,y))
-                
+                        toadd.add((x,y))
+            for elem in todell:self.deleteat(elem)
+            for elem in toadd:self.addat(elem)
+            self.rpz.set(str(self.gen))
+            self.gen+=1
         self.after(20,self.eachframe)
         
     def deleteat(self,pos):
@@ -121,9 +129,10 @@ class Fen(tk.Tk):
                 del self.cases[pos]
                 break
     def addat(self,pos):
-        self.t[pos]=1
-        self.cases[pos]=self.can.create_rectangle(pos[0]*10,pos[1]*10,pos[0]*10+10,pos[1]*10+10,
-                                  fill="white",tag=f"{pos}")
+        if not self.t[pos]:
+            self.t[pos]=1
+            self.cases[pos]=self.can.create_rectangle(pos[0]*10,pos[1]*10,pos[0]*10+10,pos[1]*10+10,
+                                      fill="white",tag=f"{pos}")
             
     def useradd(self,event):
         pos=event.x//10,event.y//10
