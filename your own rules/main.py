@@ -74,7 +74,7 @@ class Fen(tk.Tk):
         for s,tex in self.s:
             tk.Label(param,text=tex).pack()
             s.pack()
-        self.rpz=tk.StringVar(self,value="0")
+        self.rpz=tk.StringVar(self,value="Not running")
         tk.Label(param,textvariable=self.rpz).pack()
         
         self.s=[i[0] for i in self.s]
@@ -116,7 +116,7 @@ class Fen(tk.Tk):
                         toadd.add((x,y))
             for elem in todell:self.deleteat(elem)
             for elem in toadd:self.addat(elem)
-            self.rpz.set(str(self.gen))
+            self.rpz.set("Generation n°"+ str(self.gen))
             self.gen+=1
         self.after(20,self.eachframe)
         
