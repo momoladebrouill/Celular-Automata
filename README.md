@@ -6,11 +6,11 @@ Cepandant, [your own rules](./'your own rules') stoque différement les cases : 
 ### Exemple :
 Prenons la grille :
 `
-001
-011
-101
+001  
+011  
+101  
 `
-on aligne ensuite chaque ligne: 
+on aligne ensuite chaque ligne:   
 '001 011 101'
-On obtient alors un nombre binaire, qui vaut en base 10 : 93  
+On obtient alors un nombre binaire, qui vaut en base 10 : 93    
 Cette solution n'est peut être pas la meilleure au niveau spatial (je force la manipulation d'un très très grand nombre) mais au niveau temporel, je n'utilise qu'une seule entité auquelle je ne performe que de très simples actions (changer la valeur à l'indice n) sans utiliser de liste
