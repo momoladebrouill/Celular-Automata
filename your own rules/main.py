@@ -1,7 +1,6 @@
 import tkinter as tk
 import random
 
-
 tour=[(-1,-1),(-1,0),(-1,1),(0,-1),(0,1),(1,-1),(1,0),(1,1)]
 
 class Tabl():
@@ -10,17 +9,19 @@ class Tabl():
         self.w=50
         self.h=50
         self.max=2**(self.w*self.h)
+
     def switch(self,pos):
         self.val^=1<<(pos[1]*self.w+pos[0])
+
     def __setitem__(self,pos,val):
         if val:
             self.val|=1<<(pos[1]*self.w+pos[0])
         elif self[pos]:
-            self.val&=~(2**(pos[1]*self.w+pos[0]))
+            self.val-=1<<(pos[1]*self.w+pos[0])
 
     def __getitem__(self,pos):
         if 0<=pos[0]<=self.w and 0<=pos[1]<=self.h:
-            return 1 if self.val&2**(pos[1]*self.w+pos[0]) else 0
+            return bool(self.val & 1<<(pos[1]*self.w+pos[0]))
         return 0
 
     def __iter__(self):
@@ -44,7 +45,7 @@ class Tabl():
         for y in range(self.h):
             for x in range(self.w):
                 s+="1" if self.val&traceur else "0"
-                traceur*=2
+                traceur<<=1
             s+="\n"
         return s
 
@@ -79,9 +80,9 @@ class Fen(tk.Tk):
             s.pack()
         self.rpz=tk.StringVar(self,value="Not running")
         tk.Label(param,textvariable=self.rpz).pack()
-
         self.s=[i[0] for i in self.s]
         self.newrules()
+
     def empty(self):
         self.t=Tabl()
         for pos in self.cases:
@@ -89,12 +90,13 @@ class Fen(tk.Tk):
             self.can.delete(Id)
         self.cases={}
         self.gen=0
-    def newrules(self,x=None):
 
+    def newrules(self,x=None):
         self.rules={
                 "born":[self.s[0].get(),self.s[1].get()],
                 "die":[self.s[2].get(),self.s[3].get()]
                 }
+
     def eachframe(self):
         if self.isrunning.get():
             """
@@ -117,8 +119,10 @@ class Fen(tk.Tk):
                 else:
                     if self.rules["born"][0]<=somme<=self.rules["born"][1]:
                         toadd.add((x,y))
-            for elem in todell:self.deleteat(elem)
-            for elem in toadd:self.addat(elem)
+            for elem in todell:
+                self.deleteat(elem)
+            for elem in toadd:
+                self.addat(elem)
             self.rpz.set("Generation n°"+ str(self.gen))
             self.gen+=1
         self.after(20,self.eachframe)
@@ -131,20 +135,20 @@ class Fen(tk.Tk):
                 self.can.delete(Id)
                 del self.cases[pos]
                 break
+
     def addat(self,pos):
         if not self.t[pos]:
-            self.t[pos]=1
+            self.t.switch(pos)
             self.cases[pos]=self.can.create_rectangle(pos[0]*10,pos[1]*10,pos[0]*10+10,pos[1]*10+10,
                                       fill="white",tag=f"{pos}")
 
     def useradd(self,event):
         pos=event.x//10,event.y//10
         self.addat(pos)
+        
     def userdel(self,event):
         pos=event.x//10,event.y//10
         self.deleteat(pos)
-
-
 
 
 f=Fen()
