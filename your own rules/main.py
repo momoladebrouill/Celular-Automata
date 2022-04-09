@@ -6,8 +6,8 @@ tour=[(-1,-1),(-1,0),(-1,1),(0,-1),(0,1),(1,-1),(1,0),(1,1)]
 class Tabl():
     def __init__(self,width=50,height=50):
         self.val=0
-        self.w=50
-        self.h=50
+        self.w=width
+        self.h=height
         self.max=2**(self.w*self.h)
 
     def switch(self,pos):
@@ -17,7 +17,7 @@ class Tabl():
         if val:
             self.val|=1<<(pos[1]*self.w+pos[0])
         elif self[pos]:
-            self.val-=1<<(pos[1]*self.w+pos[0])
+            self.val&=~(1<<(pos[1]*self.w+pos[0]))
 
     def __getitem__(self,pos):
         if 0<=pos[0]<=self.w and 0<=pos[1]<=self.h:
@@ -145,7 +145,7 @@ class Fen(tk.Tk):
     def useradd(self,event):
         pos=event.x//10,event.y//10
         self.addat(pos)
-        
+
     def userdel(self,event):
         pos=event.x//10,event.y//10
         self.deleteat(pos)
