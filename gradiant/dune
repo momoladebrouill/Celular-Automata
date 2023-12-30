@@ -1,0 +1,4 @@
+(executable 
+  (libraries raylib)
+  (name gradiant)
+  )
