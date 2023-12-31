@@ -1,8 +1,10 @@
-
 open Raylib
-type carre = (int*int)
-let w = 100
-let he = 100
+
+let sx = 10
+let sy = 10
+
+let w = 1000/sx
+let he = 1000/sy
 
 (*
 *- - - > x (max w)
@@ -15,73 +17,84 @@ y (max h)
 
 *)
 
-module Ens = Set.Make(struct 
-  type t = carre 
-  let compare (x1,y1) (x2,y2) =  
-    Stdlib.compare (x1 + y1 * w) (x2 + y2*w) 
-end)
-
 type state = {
-  mutable carr : Ens.t;
-  value : (carre,float) Hashtbl.t;
-  time : float
+  tabl : float array array;
+  time : int
 }
 
-let fold_left_map f zero =
-  List.fold_left f zero (List.map (fun i->i mod w,i/w) (List.init (w*he) Fun.id) )
+let get t (x,y) = t.((he+y) mod he).((w+x) mod w)
+
+let set t v (x,y) = 
+  if x < 0 || x >= w || y < 0 || y >= he then failwith "nooog" 
+  else t.(y).(x) <- v
+
+let map = (List.map (fun i->i mod w,i/w) (List.init (w*he) Fun.id) )
+let fold_left_map f zero = List.fold_left f zero map 
+let iter_map f = List.iter f map
+
+let copy_map a = 
+  let a' = Array.make_matrix w he 0.0 in
+  iter_map (fun pos -> set a' (get a pos) pos);
+  a'
 
 let (+$) (a,b) (a0,b0) = (a+a0,b+b0)  
 
-let get s h (x,y) = 
-  if x < 0 || x >= w || y < 0 || y >= he then 0.0 
-  else if Ens.mem (x,y) s then Hashtbl.find h (x,y)
-  else 0.0
+let pond = [
+   0.68; -0.9; 0.68;
+   -0.9;-0.66; -0.9;
+   0.68; -0.9; 0.68
+ ]
+(*let pond = [1.0;1.0;1.0;
+1.0;9.0;1.0;
+1.0;1.0;1.0]*)
+let vois_pond = List.map2 (fun a b -> (a,b)) pond [
+  (-1,-1);( 0,-1);(1,-1);
+  (-1, 0);( 0, 0);(1, 0);
+  (-1, 1);( 0, 1);(1, 1);
+ ]
 
-
-let vois = [(-1,-1);(-1,0);(-1,1);(0,-1);(0,1);(1,-1);(1,0);(1,1)]
-let vois_pond = List.map (fun pos -> ((Random.float 2.0),pos)) ((0,0)::vois)
-
-let set s h v pos =
-  Hashtbl.replace h pos v;
-  Ens.add pos s 
-
-let activation = Fun.id
+let activation x = if x < 0. then -.x else x
+let activation x =  1.0 -. (2.0**(-0.6 *. x**2.0))
+(*
+let activation x =  if x = 3. || x = 11. || x = 12. then 1.0 else 0.0*)
+(*-1./pow(2., (0.6*pow(x, 2.)))+1.;*)
 
 let update state =  
-
-  let s = state.carr in
-  let h = state.value in
+  let t = copy_map state.tabl in
   let time = state.time in
-  let s' = 
-    fold_left_map (fun s' pos -> 
-      let value = (List.fold_left (+.) 0.0 (List.map (fun (v,pos)->v *. get s h pos) (List.map (fun (v,p) -> v,pos+$p) vois_pond)))/.8. in
-      if value > 0.125  then set s' h value pos  
-      (*else if Random.int 50000 = 0 then List.fold_left (fun s' dir -> set s' h 1.0 (pos +$ dir)) s' ((0,0)::vois)*)
-      else s') Ens.empty
-  in 
-  {carr = s'; value = h; time = if time = 100.0 then 0.0  else time +. 1.0}
+  iter_map (fun pos -> 
+      let value = 
+        List.fold_left (+.) 0.0 (List.map (fun (v,pos)->v *. get state.tabl pos) (List.map (fun (v,p) -> v,pos+$p) vois_pond)) 
+      in
+      set t (activation value) pos);
+  {tabl = t; time = (time + 1) mod 10}
+
+let draw state =
+  draw_rectangle 0 0 1000 1000 Color.black;
+  iter_map (fun (x,y) ->
+    let pos = (x,y) in
+    draw_rectangle (x*sx) (y*sy) sx sy (color_from_hsv (get state.tabl pos *. 360.) 1. (get state.tabl pos));
+    if false then draw_text (string_of_float (get state.tabl pos)) (sx*x) (sy*y) 10 Color.raywhite;
+   );
+  begin_drawing ();
+  end_drawing ()
 
 let rec loop state =
   if Raylib.window_should_close () then Raylib.close_window () else 
-  let domain = Domain.spawn (fun _ -> update state) in 
-  draw_rectangle 0 0 1000 1000 Color.black;
-  Ens.iter (fun (x,y) ->
-    draw_rectangle (x*10) (y*10) 10 10 (color_from_hsv 360. 1. (Hashtbl.find state.value (x,y)) ))
-    state.carr;
-  begin_drawing ();
-  end_drawing ();
+  if state.time mod 2 = 1 then draw state;
+  let state' = update state in
   if is_mouse_button_down MouseButton.Left then
-    state.carr <- set state.carr state.value 1.0 (get_mouse_x ()/10,get_mouse_y ()/10);
-  loop (Domain.join domain)
+    set state'.tabl 1.0 (get_mouse_x ()/sx,get_mouse_y ()/sy);
+  loop state'
 
 let setup () =
   Random.self_init ();
   Raylib.init_window 1000 1000 "Jean";
   Raylib.set_target_fps 60;
   if is_window_ready () then
-    let h = Hashtbl.create 69 in
-    let s = fold_left_map (fun s pos -> if Random.int 10 <> 0 then s else (Hashtbl.add h pos 1.0;Ens.add pos s) ) Ens.empty in 
-    {carr = s; value = h; time = 0.0}
+    let t = Array.make_matrix w he 0.0 in
+    iter_map (fun pos -> set t (Random.float 2.0 -. 1.0)  pos);
+    {tabl = t;time = 0}
    else failwith "window not ridi"
 let () =
   let _ = loop (setup ()) in ()
