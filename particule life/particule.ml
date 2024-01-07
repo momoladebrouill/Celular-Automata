@@ -7,7 +7,7 @@ let sizey = 1000.0
 let rayon = 5.0
 let friction = 0.1
 let rs = 2.0
-let nclan = 10
+let nclan = 5 
 
 type vec = float * float
 
@@ -82,7 +82,7 @@ let move status p =
   let pos, vit = collision p in
   {
     pos = pos;
-    vit = vit *$ (1.0 -. friction) +$ p.acc;
+    vit = (let v = vit *$ (1.0 -. friction) +$ p.acc in v *$ (1.0/. norme v));
     acc = List.fold_left (+$) zero  (List.map (attraction relations p)  others);
     clan = p.clan
   }
@@ -138,7 +138,7 @@ let setup () =
       tk2.(i).(j) <- (let v = cos (Random.float 6.14 -. 3.14) /.2.0 -. 0.2 in if i=j then -. abs_f v else v);
       minR.(i).(j) <- max rayon (Random.float 30.0);
       maxR.(i).(j) <- Random.float 70.0 +. 30.0;
-      maxR.(j).(i) <- maxR.(i).(j); (*radii ?*)
+      maxR.(j).(i) <- maxR.(i).(j); (*radii ?  jsp c quoi*)
     done
   done;
   {
