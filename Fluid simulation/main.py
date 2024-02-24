@@ -1,5 +1,4 @@
 import pygame as pg
-import noise
 import random
 from colorsys import hsv_to_rgb
 # Constantes :

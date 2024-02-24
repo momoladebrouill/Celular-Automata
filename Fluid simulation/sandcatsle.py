@@ -1,5 +1,4 @@
 import pygame as pg
-import noise
 import random
 from colorsys import hsv_to_rgb
 # Constantes :
@@ -10,8 +9,6 @@ SIZE = 750/nbs #les dimentions des cellules
 quadri=range(int(WIND/SIZE))
 fps = pg.time.Clock()
 
-
-
 def find(x,y):
     if x>0 and x<nbs and y>0 and y<nbs:
         return not bool(lieux.get((x,y),0))
@@ -21,6 +18,7 @@ def pick():
         return hsv_to_rgb(random.random(),1,255)
     else:
         return (255,255,255)
+
 def neigbourg(i,j):
     ls=((i-1,j-1),(i,j-1),(i+1,j-1),
         (i-1,j),        (i+1,j),
@@ -28,9 +26,11 @@ def neigbourg(i,j):
     for pos in ls:
         if pos[0]>0 and pos[0]<nbs and pos[1]<nbs and pos[1]>0:
             yield pos
+
 lieux={}
 b = True
 mode=''
+
 try:
     pg.init()
     f = pg.display.set_mode(size=(WIND, WIND))
